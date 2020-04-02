@@ -21,13 +21,9 @@ from sensor_msgs.msg import LaserScan
 distancia=0
 
 def scaneou(dado):
-	print("Faixa valida: ", dado.range_min , " - ", dado.range_max )
-	print("Leituras:")
-	print(np.array(dado.ranges).round(decimals=2))
 	global distancia
 	distancia=dado.ranges[0]
-	#print("Intensities")
-	#print(np.array(dado.intensities).round(decimals=2))
+	print("DISTANCIA         {}" .format(distancia))
 
 
 
@@ -103,28 +99,53 @@ if __name__=="__main__":
 	print("Usando ", topico_imagem)
 
 	velocidade_saida = rospy.Publisher("/cmd_vel", Twist, queue_size = 1)
-
+	
+	b=0
 	try:
 
 		while not rospy.is_shutdown():
 			
 			if len(media) != 0 and len(centro) != 0 and maior_area>300:
 				print("Média dos vermelhos: {0}, {1}".format(media[0], media[1]))
-				print("Centro dos vermelhos: {0}, {1}".format(centro[0], centro[1]))
-				if distancia>0.4:
+				print("Centro dos vermelhos: {0}, {1}".format(centro[0], centro[1]))			
+				
+				
+				if b<100:	
 					if (media[0] > centro[0]):
-						vel = Twist(Vector3(0.1,0,0), Vector3(0,0,-0.01))
+						vel = Twist(Vector3(0,0,0), Vector3(0,0,-0.05))
+						
+						
+					
 					if (media[0] < centro[0]):
-						vel = Twist(Vector3(0.1,0,0), Vector3(0,0,0.01))
+						vel = Twist(Vector3(0,0,0), Vector3(0,0,0.05))
 					
+						b+=1
+						
+				
+				elif distancia>0.4:
 					
+					if (media[0] > centro[0]):
+						vel = Twist(Vector3(0.1,0,0), Vector3(0,0,-0.05))
+						
+						
+					
+					if (media[0] < centro[0]):
+						vel = Twist(Vector3(0.1,0,0), Vector3(0,0,0.05))
+					
+
+				else:
+				
+					vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+			
+
 
 
 			else:
-				vel = Twist(Vector3(0,0,0), Vector3(0,0,0.1))
+				vel = Twist(Vector3(0,0,0), Vector3(0,0,0.5))
 
 			velocidade_saida.publish(vel)
 			rospy.sleep(0.1)
-
+			
+			
 	except rospy.ROSInterruptException:
 	    print("Ocorreu uma exceção com o rospy")
